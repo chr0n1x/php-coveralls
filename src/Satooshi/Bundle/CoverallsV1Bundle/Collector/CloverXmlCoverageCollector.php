@@ -86,17 +86,17 @@ class CloverXmlCoverageCollector
      */
     protected function collectFileCoverage(\SimpleXMLElement $file, $root)
     {
-        $absolutePath = (string) ($file['path'] ?: $file['name']);
+        $filename = (string) ($file['path'] ?: $file['name']);
+        $absolutePath = realpath($filename);
+        $realroot = realpath($root);
 
-        if (false === strpos($absolutePath, $root)) {
+        if (false === strpos($absolutePath, $realroot)) {
             return null;
         }
 
-        if ($root !== DIRECTORY_SEPARATOR) {
-            $filename = str_replace($root, '', $absolutePath);
-        } else {
-            $filename = $absolutePath;
-        }
+        // remove all traces of the root path from filename
+        $rootRegexp = '/^' . str_replace('/', '\/', $realroot) . '\//';
+        $filename = preg_replace($rootRegexp, '', $absolutePath, 1);
 
         return $this->collectCoverage($file, $absolutePath, $filename);
     }
